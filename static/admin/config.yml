@@ -1,0 +1,253 @@
+# -----------------------------------------------------------------------------
+# Backend (Decap Turbo)
+# https://decapcms.org/docs/turbo-connecting-a-site/
+#
+# The repo and branch come from the site record in the Turbo dashboard, so
+# don't set `repo` here (a mismatch causes a "requested repo does not match"
+# error). Only the site ID is required.
+
+backend:
+  name: turbo-github
+  turbo_site_id: YOUR_TURBO_SITE_ID
+
+# Edit local files without logging in by running `npx decap-server` next to
+# `hugo server`. Ignored when the proxy server isn't running.
+local_backend: true
+
+# -----------------------------------------------------------------------------
+# Media
+
+media_folder: static/media
+public_folder: /media
+
+# -----------------------------------------------------------------------------
+# Content
+
+collections:
+
+  # Pages
+  - name: pages
+    label: Pages
+    editor:
+      preview: false
+    files:
+
+      # Home
+      - name: home
+        label: Home
+        file: content/_index.md
+        format: yaml-frontmatter
+        fields:
+          - &pageTitle
+            name: title
+            label: Page Title
+            widget: string
+          - &pageDescription
+            name: description
+            label: Page Description
+            widget: text
+            required: false
+          - name: params
+            label: Page
+            widget: object
+            fields:
+              - &pageHeader
+                name: pageHeader
+                label: Page Header
+                widget: object
+                collapsed: true
+                fields:
+                  - { name: enabled, label: Enabled, widget: boolean, default: true, required: false }
+                  - { name: condensed, label: Condensed, widget: boolean, default: true, required: false }
+                  - { name: heading, label: Heading, widget: string, required: false }
+                  - { name: subheading, label: Subheading, widget: string, required: false }
+                  - { name: image, label: Background Image, widget: image, required: false }
+
+              # Components
+              - name: components
+                label: Components
+                widget: list
+                typeKey: type
+                collapsed: true
+                required: false
+                types:
+
+                  # Heading
+                  - name: heading
+                    label: Heading
+                    widget: object
+                    summary: "Heading: {{text}}"
+                    fields:
+                      - name: level
+                        label: Level
+                        widget: select
+                        default: 2
+                        options: [2, 3, 4, 5, 6]
+                      - { name: text, label: Text, widget: string }
+
+                  # Content
+                  - name: content
+                    label: Content
+                    widget: object
+                    summary: Content
+                    fields:
+                      - { name: content, label: Content, widget: markdown, required: false }
+
+                  # Accordion
+                  - name: accordion
+                    label: Accordion
+                    widget: object
+                    summary: Accordion
+                    fields:
+                      - { name: exclusive, label: Exclusive, widget: boolean, default: true, required: false }
+                      - name: details
+                        label: Details
+                        label_singular: Detail
+                        widget: list
+                        collapsed: true
+                        summary: "{{summary}}"
+                        required: false
+                        fields:
+                          - { name: summary, label: Summary, widget: string, required: false }
+                          - { name: content, label: Content, widget: markdown, required: false }
+                          - { name: open, label: Open, widget: boolean, default: false, required: false }
+
+                  # Alert
+                  - name: alert
+                    label: Alert
+                    widget: object
+                    summary: "Alert: {{variant}}"
+                    fields:
+                      - name: variant
+                        label: Variant
+                        widget: select
+                        default: default
+                        options: [default, success, warning, error]
+                      - { name: content, label: Content, widget: markdown, required: false }
+
+                  # Cards
+                  - name: cards
+                    label: Cards
+                    widget: object
+                    summary: Cards
+                    fields:
+                      - name: cardlist
+                        label: Card List
+                        label_singular: Card
+                        widget: list
+                        collapsed: true
+                        summary: "{{heading}}"
+                        required: false
+                        fields:
+                          - { name: heading, label: Heading, widget: string, required: false }
+                          - { name: description, label: Description, widget: string, required: false }
+                          - { name: content, label: Content, widget: markdown, required: false }
+                          - name: footer
+                            label: Footer Buttons
+                            label_singular: Button
+                            widget: list
+                            collapsed: true
+                            summary: "{{text}}"
+                            required: false
+                            fields:
+                              - { name: text, label: Text, widget: string, required: false }
+                              - { name: url, label: URL, widget: string, required: false }
+                              - name: style
+                                label: Style
+                                widget: select
+                                default: default
+                                options: [default, outline, ghost]
+                              - name: variant
+                                label: Variant
+                                widget: select
+                                default: default
+                                options: [default, primary, secondary, danger]
+                              - name: size
+                                label: Size
+                                widget: select
+                                default: default
+                                options: [default, small, large]
+
+                  # Tabs
+                  - name: tabs
+                    label: Tabs
+                    widget: object
+                    summary: Tabs
+                    fields:
+                      - name: tablist
+                        label: Tab List
+                        label_singular: Tab
+                        widget: list
+                        collapsed: true
+                        summary: "{{tab}}"
+                        required: false
+                        fields:
+                          - { name: tab, label: Tab, widget: string, required: false }
+                          - { name: tabpanel, label: Tab Panel, widget: markdown, required: false }
+
+      # Blog
+      - name: blog
+        label: Blog
+        file: content/blog/_index.md
+        format: yaml-frontmatter
+        fields:
+          - *pageTitle
+          - *pageDescription
+          - name: cascade
+            label: All Pages
+            widget: object
+            fields:
+              - name: params
+                label: Page
+                widget: object
+                fields:
+                  - *pageHeader
+
+  # Blog Posts
+  - name: blogPosts
+    label: Blog Posts
+    label_singular: Blog Post
+    folder: content/blog
+    extension: md
+    format: yaml-frontmatter
+    create: true
+    # Decap has no "exclude" option, so posts carry a hidden marker field to
+    # keep the section's _index.md out of this list.
+    filter: { field: contentType, value: post }
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    summary: "{{title}}{{draft | ternary(' (draft)', '')}}"
+    sortable_fields:
+      - { field: date, default_sort: desc }
+      - title
+    fields:
+      - { name: contentType, widget: hidden, default: post }
+      - { name: title, label: Title, widget: string }
+      - name: date
+        label: Date
+        widget: datetime
+        format: "YYYY-MM-DDTHH:mm:ss"
+      - { name: draft, label: Draft, widget: boolean, default: true, required: false }
+      - { name: tags, label: Tags, widget: list, required: false }
+      - { name: body, label: Content, widget: markdown, required: false }
+
+  # Site Navigation
+  - name: settings
+    label: Settings
+    editor:
+      preview: false
+    files:
+      - name: siteNavigation
+        label: Site Navigation
+        file: config/_default/menu.yaml
+        format: yaml
+        fields:
+          - name: main
+            label: Main Menu
+            label_singular: Menu Item
+            widget: list
+            collapsed: true
+            summary: "{{name}} ({{pageRef}})"
+            fields:
+              - { name: name, label: Name, widget: string }
+              - { name: pageRef, label: URL, widget: string }
+              - { name: weight, label: Weight, widget: number, value_type: int, required: false }
