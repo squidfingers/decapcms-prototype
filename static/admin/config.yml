@@ -8,7 +8,7 @@
 
 backend:
   name: turbo-github
-  turbo_site_id: YOUR_TURBO_SITE_ID
+  turbo_site_id: 7bed9fd4-4c80-43ce-9a92-efadfd3bba5a
 
 # Edit local files without logging in by running `npx decap-server` next to
 # `hugo server`. Ignored when the proxy server isn't running.
